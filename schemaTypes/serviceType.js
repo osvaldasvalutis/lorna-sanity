@@ -54,6 +54,52 @@ export const serviceType = defineType({
     localizedTitleField({ group: `main` }),
     localizedSlugField({ group: `main` }),
     defineField({
+      name: `parent`,
+      group: `main`,
+      type: `reference`,
+      weak: true,
+      to: [{ type: `service` }],
+      options: {
+        filter: ({ document }) => {
+          return {
+            filter: `_id != $id && !defined(parent)`,
+            params: {
+              id: document._id.replace(/^drafts\./, ``),
+            },
+          }
+        },
+      },
+    }),
+    // defineField({
+    //   name: `children`,
+    //   group: `main`,
+    //   type: `array`,
+    //   of: [
+    //     defineArrayMember({
+    //       type: `reference`,
+    //       weak: true,
+    //       to: [{ type: `service` }],
+    //       options: {
+    //         filter: ({ document, parent }) => {
+    //           const parentRefs =
+    //             /** @type {{ _ref?: string }[] | undefined} */ (parent) || []
+    //           const selectedIds = parentRefs
+    //             .map((item) => item?._ref)
+    //             .filter((ref) => Boolean(ref))
+
+    //           return {
+    //             filter: `_id != $id && !(_id in $selectedIds)`,
+    //             params: {
+    //               id: document._id.replace(/^drafts\./, ``),
+    //               selectedIds,
+    //             },
+    //           }
+    //         },
+    //       },
+    //     }),
+    //   ],
+    // }),
+    defineField({
       name: `body`,
       group: `main`,
       type: `internationalizedArrayBlockContent`,
@@ -166,5 +212,17 @@ export const serviceType = defineType({
   ],
   preview: {
     ...typePreview,
+    // select: {
+    //   ...typePreview.select,
+    //   parent: `parent`,
+    // },
+    // /** @param {import('./lib/typePreview').DocumentPreviewSelection & { parent?: unknown }} selection */
+    // prepare(selection) {
+    //   const prepared = typePreview.prepare(selection)
+    //   return {
+    //     ...prepared,
+    //     title: selection?.parent ? `— ${prepared.title}` : prepared.title,
+    //   }
+    // },
   },
 })

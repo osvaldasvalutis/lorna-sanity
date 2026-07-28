@@ -46,7 +46,43 @@ export default defineConfig({
         S.list()
           .title(`Content`)
           .items([
-            S.documentTypeListItem(`service`).title(`Services`).icon(CaseIcon),
+            S.listItem()
+              .id(`services`)
+              .title(`Services`)
+              .icon(CaseIcon)
+              .child(
+                S.list()
+                  .id(`services`)
+                  .title(`Services`)
+                  .items([
+                    S.listItem()
+                      .id(`services-main`)
+                      .title(`Main`)
+                      .child(
+                        S.documentList()
+                          .id(`services-main-list`)
+                          .title(`Main services`)
+                          .schemaType(`service`)
+                          .filter(`_type == "service" && !defined(parent)`)
+                          .initialValueTemplates([
+                            S.initialValueTemplateItem(`service`),
+                          ])
+                      ),
+                    S.listItem()
+                      .id(`services-sub`)
+                      .title(`Sub`)
+                      .child(
+                        S.documentList()
+                          .id(`services-sub-list`)
+                          .title(`Sub services`)
+                          .schemaType(`service`)
+                          .filter(`_type == "service" && defined(parent)`)
+                          .initialValueTemplates([
+                            S.initialValueTemplateItem(`service`),
+                          ])
+                      ),
+                  ])
+              ),
             S.documentTypeListItem(`page`).title(`Pages`).icon(DocumentIcon),
             S.documentTypeListItem(`article`).title(`Articles`).icon(BookIcon),
             S.documentTypeListItem(`news`).title(`News`).icon(BookIcon),
@@ -97,7 +133,7 @@ export default defineConfig({
                   groq`
                   !defined(*[
                     !sanity::versionOf($published) &&
-                    _type == $type &&
+                    _type in select($type in ["service", "page"] => ["service", "page"], [$type]) && // must be unique in service+page otherwise only in the same type
                     count(${fieldName}[language == $language && value.current == $slug]) > 0
                   ][0]._id)
                 `,
