@@ -1,13 +1,65 @@
-import { defineField, defineType } from "sanity"
+import { defineField, defineType, defineArrayMember } from "sanity"
 
 export const settingsType = defineType({
   name: `settings`,
   title: `Settings`,
   type: `document`,
   fields: [
-    defineField({ name: `title`, type: `string` }),
-    defineField({ name: `description`, type: `text` }),
-    defineField({ name: `email`, type: `email` }),
+    // defineField({ name: `title`, type: `string` }),
+    // defineField({ name: `description`, type: `text` }),
+    // defineField({ name: `email`, type: `email` }),
+    defineField({
+      name: `homeGallery`,
+      type: `array`,
+      of: [
+        defineArrayMember({
+          type: `image`,
+          name: `image`,
+          fields: [
+            { name: `title`, type: `internationalizedArrayString` },
+            { name: `description`, type: `internationalizedArrayString` },
+            { name: `link`, type: `internationalizedArrayString` },
+            {
+              name: `relation`,
+              type: `reference`,
+              weak: true,
+              to: [
+                { type: `service` },
+                { type: `page` },
+                { type: `article` },
+                { type: `news` },
+              ],
+            },
+          ],
+        }),
+      ],
+    }),
+    defineField({
+      name: `contactGallery`,
+      type: `array`,
+      of: [
+        defineArrayMember({
+          type: `image`,
+          name: `image`,
+          fields: [
+            { name: `title`, type: `internationalizedArrayString` },
+            { name: `description`, type: `internationalizedArrayString` },
+            { name: `link`, type: `internationalizedArrayString` },
+            {
+              name: `relation`,
+              type: `reference`,
+              weak: true,
+              to: [
+                { type: `service` },
+                { type: `page` },
+                { type: `article` },
+                { type: `news` },
+              ],
+            },
+          ],
+        }),
+      ],
+    }),
     // defineField({
     //   name: `menu`,
     //   type: `array`,
@@ -31,6 +83,7 @@ export const settingsType = defineType({
     //         defineField({
     //           name: `internalLink`,
     //           type: `reference`,
+    //           weak: true,
     //           to: [{ type: `page` }, { type: `article` }],
     //           hidden: ({ parent }) => parent?.linkType !== `internal`,
     //         }),
