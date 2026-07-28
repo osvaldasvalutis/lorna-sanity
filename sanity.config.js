@@ -10,10 +10,124 @@ import { CogIcon } from "@sanity/icons/Cog"
 import { CaseIcon } from "@sanity/icons/Case"
 import { DocumentIcon } from "@sanity/icons/Document"
 import { BookIcon } from "@sanity/icons/Book"
+import { AddIcon } from "@sanity/icons/Add"
 import { internationalizedArray } from "sanity-plugin-internationalized-array"
 import groq from "groq"
 
 import { schemaTypes } from "./schemaTypes"
+
+/**
+ * Plain `S.list()` panes don't render `.initialValueTemplates()` (that's a
+ * `documentList`/`documentTypeList`-only feature), so the "+ Create" button
+ * has to be added as a menu item with a `create` intent instead.
+ *
+ * @param {import('sanity/structure').StructureBuilder} S
+ */
+const createServiceMenuItem = (S) =>
+  S.menuItem()
+    .title(`Create new`)
+    .icon(AddIcon)
+    .intent({ type: `create`, params: { type: `service` } })
+
+/**
+ * Builds the "Sub" services list as one group per main service (a service
+ * with no `parent`), each opening a document list filtered to that main
+ * service's children.
+ *
+ * @param {import('sanity/structure').StructureBuilder} S
+ * @param {import('sanity').ConfigContext} context
+ */
+async function subServicesByMainService(S, context) {
+  const client = context
+    .getClient({ apiVersion: `2025-02-19` })
+    .withConfig({ perspective: `drafts` })
+
+  /** @type {{ _id: string, title?: string }[]} */
+  const mainServices = await client.fetch(groq`
+    *[_type == "service" && !defined(parent)]{
+      _id,
+      "title": title[0].value
+    }
+  `)
+
+  const byPublishedId = new Map()
+  for (const service of mainServices) {
+    const publishedId = getPublishedId(service._id)
+    if (!byPublishedId.has(publishedId)) byPublishedId.set(publishedId, service)
+  }
+
+  const items = [...byPublishedId.values()].sort((a, b) =>
+    (a.title || ``).localeCompare(b.title || ``)
+  )
+
+  return S.list()
+    .id(`services`)
+    .title(`Services`)
+    .items(
+      items.map((service) => {
+        const parentId = getPublishedId(service._id)
+        return S.listItem()
+          .id(parentId)
+          .title(service.title || `(No title)`)
+          .child(() =>
+            mainServiceWithChildren(
+              S,
+              context,
+              parentId,
+              service.title || `(No title)`
+            )
+          )
+      })
+    )
+    .menuItems([createServiceMenuItem(S)])
+}
+
+/**
+ * Builds a single main service's group: the main service itself, followed
+ * by its sub services.
+ *
+ * @param {import('sanity/structure').StructureBuilder} S
+ * @param {import('sanity').ConfigContext} context
+ * @param {string} parentId
+ * @param {string} title
+ */
+async function mainServiceWithChildren(S, context, parentId, title) {
+  const client = context
+    .getClient({ apiVersion: `2025-02-19` })
+    .withConfig({ perspective: `drafts` })
+
+  /** @type {{ _id: string, title?: string }[]} */
+  const children = await client.fetch(
+    groq`*[_type == "service" && parent._ref == $parentId]{ _id, "title": title[0].value }`,
+    { parentId }
+  )
+
+  const byPublishedId = new Map()
+  for (const child of children) {
+    const childId = getPublishedId(child._id)
+    if (!byPublishedId.has(childId)) byPublishedId.set(childId, child)
+  }
+
+  const sortedChildren = [...byPublishedId.values()].sort((a, b) =>
+    (a.title || ``).localeCompare(b.title || ``)
+  )
+
+  return S.list()
+    .id(`services-sub-${parentId}`)
+    .title(title)
+    .items([
+      S.documentListItem().id(parentId).schemaType(`service`).title(title),
+      S.divider(),
+      ...sortedChildren.map((child) => {
+        const childId = getPublishedId(child._id)
+        return S.documentListItem()
+          .id(childId)
+          .schemaType(`service`)
+          .title(child.title || `(No title)`)
+      }),
+    ])
+    .menuItems([createServiceMenuItem(S)])
+}
 
 export default defineConfig({
   name: `default`,
@@ -42,7 +156,7 @@ export default defineConfig({
   },
   plugins: [
     structureTool({
-      structure: (S) =>
+      structure: (S, context) =>
         S.list()
           .title(`Content`)
           .items([
@@ -50,39 +164,35 @@ export default defineConfig({
               .id(`services`)
               .title(`Services`)
               .icon(CaseIcon)
-              .child(
-                S.list()
-                  .id(`services`)
-                  .title(`Services`)
-                  .items([
-                    S.listItem()
-                      .id(`services-main`)
-                      .title(`Main`)
-                      .child(
-                        S.documentList()
-                          .id(`services-main-list`)
-                          .title(`Main services`)
-                          .schemaType(`service`)
-                          .filter(`_type == "service" && !defined(parent)`)
-                          .initialValueTemplates([
-                            S.initialValueTemplateItem(`service`),
-                          ])
-                      ),
-                    S.listItem()
-                      .id(`services-sub`)
-                      .title(`Sub`)
-                      .child(
-                        S.documentList()
-                          .id(`services-sub-list`)
-                          .title(`Sub services`)
-                          .schemaType(`service`)
-                          .filter(`_type == "service" && defined(parent)`)
-                          .initialValueTemplates([
-                            S.initialValueTemplateItem(`service`),
-                          ])
-                      ),
-                  ])
-              ),
+              .child(() => subServicesByMainService(S, context)),
+            // S.listItem()
+            //   .id(`services`)
+            //   .title(`Services`)
+            //   .icon(CaseIcon)
+            //   .child(
+            //     S.list()
+            //       .id(`services`)
+            //       .title(`Services`)
+            //       .items([
+            //         S.listItem()
+            //           .id(`services-main`)
+            //           .title(`Main`)
+            //           .child(
+            //             S.documentList()
+            //               .id(`services-main-list`)
+            //               .title(`Main services`)
+            //               .schemaType(`service`)
+            //               .filter(`_type == "service" && !defined(parent)`)
+            //               .initialValueTemplates([
+            //                 S.initialValueTemplateItem(`service`),
+            //               ])
+            //           ),
+            //         S.listItem()
+            //           .id(`services-sub`)
+            //           .title(`Sub`)
+            //           .child(() => subServicesByMainService(S, context)),
+            //       ])
+            //   ),
             S.documentTypeListItem(`page`).title(`Pages`).icon(DocumentIcon),
             S.documentTypeListItem(`article`).title(`Articles`).icon(BookIcon),
             S.documentTypeListItem(`news`).title(`News`).icon(BookIcon),
