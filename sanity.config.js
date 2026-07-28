@@ -19,15 +19,24 @@ import { schemaTypes } from "./schemaTypes"
 /**
  * Plain `S.list()` panes don't render `.initialValueTemplates()` (that's a
  * `documentList`/`documentTypeList`-only feature), so the "+ Create" button
- * has to be added as a menu item with a `create` intent instead.
+ * has to be added as a menu item with a `create` intent instead. When
+ * `parentId` is given, the new service is created via the `serviceWithParent`
+ * template (see `schema.templates` below) so its `parent` field is
+ * preselected to that main service.
  *
  * @param {import('sanity/structure').StructureBuilder} S
+ * @param {string} [parentId]
  */
-const createServiceMenuItem = (S) =>
+const createServiceMenuItem = (S, parentId) =>
   S.menuItem()
     .title(`Create new`)
     .icon(AddIcon)
-    .intent({ type: `create`, params: { type: `service` } })
+    .intent({
+      type: `create`,
+      params: parentId
+        ? [{ type: `service`, template: `serviceWithParent` }, { parentId }]
+        : { type: `service` },
+    })
 
 /**
  * Builds the "Sub" services list as one group per main service (a service
@@ -126,7 +135,7 @@ async function mainServiceWithChildren(S, context, parentId, title) {
           .title(child.title || `(No title)`)
       }),
     ])
-    .menuItems([createServiceMenuItem(S)])
+    .menuItems([createServiceMenuItem(S, parentId)])
 }
 
 export default defineConfig({
@@ -337,5 +346,19 @@ export default defineConfig({
   ],
   schema: {
     types: schemaTypes,
+    templates: (prev) => [
+      ...prev,
+      {
+        id: `serviceWithParent`,
+        title: `Service`,
+        schemaType: `service`,
+        /** @param {{ parentId?: string }} params */
+        value: (params) => ({
+          parent: params?.parentId
+            ? { _type: `reference`, _ref: params.parentId, _weak: true }
+            : undefined,
+        }),
+      },
+    ],
   },
 })
