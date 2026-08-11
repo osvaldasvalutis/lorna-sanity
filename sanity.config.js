@@ -298,6 +298,11 @@ export default defineConfig({
                         title: `URL`,
                         name: `href`,
                         type: `url`,
+                        validation: (Rule) =>
+                          Rule.uri({
+                            scheme: [`https`, `tel`, `mailto`],
+                            allowRelative: true,
+                          }),
                       },
                     ],
                   },
@@ -333,6 +338,24 @@ export default defineConfig({
                 },
               ],
             }),
+            // https://www.sanity.io/answers/how-to-add-an-react-hr-component-to-blockcontent-schema
+            // https://www.sanity.io/recipes/breaks-for-portable-text-189dba35
+            // defineArrayMember({
+            //   name: `hr`,
+            //   type: `object`,
+            //   title: `Horizontal Rule`,
+            //   fields: [
+            //     {
+            //       name: `style`,
+            //       type: `string`,
+            //       hidden: true,
+            //       initialValue: `Horizontal Rule`,
+            //       options: {
+            //         list: [`break`, `readMore`],
+            //       },
+            //     },
+            //   ],
+            // }),
             // defineArrayMember({
             //   type: "reference",
             //   name: "article",

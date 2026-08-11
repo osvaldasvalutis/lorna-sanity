@@ -27,6 +27,11 @@ export const pageType = defineType({
     }),
     defineFilesField(),
     defineField({
+      name: `showInMenu`,
+      type: `boolean`,
+      initialValue: false,
+    }),
+    defineField({
       name: `published`,
       type: `boolean`,
       initialValue: true,

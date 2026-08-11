@@ -60,6 +60,14 @@ export const settingsType = defineType({
         }),
       ],
     }),
+    defineField({
+      name: `appointmentText`,
+      type: `internationalizedArrayBlockContent`,
+    }),
+    defineField({
+      name: `contactText`,
+      type: `internationalizedArrayBlockContent`,
+    }),
     // defineField({
     //   name: `menu`,
     //   type: `array`,
