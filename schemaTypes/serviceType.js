@@ -6,7 +6,7 @@ import {
 } from "sanity"
 import { localizedTitleField } from "./fields/localizedTitleField"
 import { localizedSlugField } from "./fields/localizedSlugField"
-import { defineFilesField } from "./fields/filesField"
+// import { defineFilesField } from "./fields/filesField"
 import { typePreview } from "./lib/typePreview"
 
 /** @typedef {import('./lib/typePreview').LocalizedValue} LocalizedValue */
@@ -42,9 +42,9 @@ export const serviceType = defineType({
     {
       name: `gallery`,
     },
-    {
-      name: `files`,
-    },
+    // {
+    //   name: `files`,
+    // },
     {
       ...ALL_FIELDS_GROUP,
       hidden: true,
@@ -103,6 +103,19 @@ export const serviceType = defineType({
       name: `body`,
       group: `main`,
       type: `internationalizedArrayBlockContent`,
+    }),
+    defineField({
+      name: `appointmentBody`,
+      title: `Appointment Text`,
+      group: `main`,
+      type: `internationalizedArrayBlockContent`,
+    }),
+    defineField({
+      name: `menuOrder`,
+      description: `The order of this service in the menu. Higher numbers are shown first.`,
+      group: `main`,
+      type: `number`,
+      initialValue: 0,
     }),
     defineField({
       name: `showAppointmentForm`,
@@ -208,7 +221,7 @@ export const serviceType = defineType({
         }),
       ],
     }),
-    defineFilesField({ group: `files` }),
+    // defineFilesField({ group: `files` }),
   ],
   preview: {
     ...typePreview,
