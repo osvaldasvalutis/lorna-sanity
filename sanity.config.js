@@ -143,6 +143,16 @@ export default defineConfig({
   title: `Lorna`,
   projectId: `la248zyx`,
   dataset: `production`,
+  auth: {
+    providers: [
+      {
+        name: `sanity`,
+        title: `Email / Password`,
+        url: `https://api.sanity.io/v1/auth/login/sanity`,
+      },
+    ],
+    redirectOnSingle: true, // skips the provider-picker screen entirely
+  },
   document: {
     drafts: {
       // enabled: false,
