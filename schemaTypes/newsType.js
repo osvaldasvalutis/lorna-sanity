@@ -1,7 +1,7 @@
 import { defineField, defineType } from "sanity"
 import { localizedTitleField } from "./fields/localizedTitleField"
 import { localizedSlugField } from "./fields/localizedSlugField"
-import { defineFilesField } from "./fields/filesField"
+// import { defineFilesField } from "./fields/filesField"
 import { typePreview } from "./lib/typePreview"
 
 export const newsType = defineType({
@@ -25,7 +25,7 @@ export const newsType = defineType({
       name: `body`,
       type: `internationalizedArrayBlockContent`,
     }),
-    defineFilesField(),
+    // defineFilesField(),
     defineField({
       name: `published`,
       type: `boolean`,
