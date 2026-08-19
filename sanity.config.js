@@ -53,7 +53,7 @@ async function subServicesByMainService(S, context) {
 
   /** @type {{ _id: string, title?: string }[]} */
   const mainServices = await client.fetch(groq`
-    *[_type == "service" && !defined(parent)]{
+    *[_type == "service" && !defined(parent)] | order(defined(menuOrder) desc, menuOrder desc, title[0].value asc) {
       _id,
       "title": title[0].value
     }
@@ -65,9 +65,7 @@ async function subServicesByMainService(S, context) {
     if (!byPublishedId.has(publishedId)) byPublishedId.set(publishedId, service)
   }
 
-  const items = [...byPublishedId.values()].sort((a, b) =>
-    (a.title || ``).localeCompare(b.title || ``)
-  )
+  const items = [...byPublishedId.values()]
 
   return S.list()
     .id(`services`)
