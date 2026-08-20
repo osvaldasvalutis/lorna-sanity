@@ -13,9 +13,9 @@ function fixVideoEmbedUrl(url) {
 
   switch (service) {
     case `youtube`:
-      return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1`
+      return `https://www.youtube-nocookie.com/embed/${id}?autoplay=0&mute=1&enablejsapi=1`
     case `vimeo`:
-      return `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&dnt=1&api=1`
+      return `https://player.vimeo.com/video/${id}?autoplay=0&muted=1&dnt=1&api=1`
     default:
       return null
   }
@@ -58,8 +58,10 @@ export const defineVideoEmbedMember = () =>
           Rule.required().custom((url) => {
             if (!url) return true
             const { id, service } = getVideoId(url)
-            return (id && (service === `youtube` || service === `vimeo`)) ||
+            return (
+              (id && (service === `youtube` || service === `vimeo`)) ||
               `Only YouTube or Vimeo URLs are allowed`
+            )
           }),
       }),
     ],
