@@ -2,31 +2,30 @@ import { createElement } from "react"
 import { defineArrayMember, defineField } from "sanity"
 import { PlayIcon } from "@sanity/icons/Play"
 import { Flex, Text } from "@sanity/ui"
+import getVideoId from "get-video-id"
 
-const VIDEO_URL_PATTERN =
-  /^https:\/\/(www\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)\//i
-
-const YOUTUBE_ID_PATTERN =
-  /youtube\.com\/(?:watch\?v=|embed\/|shorts\/)([\w-]{11})|youtu\.be\/([\w-]{11})/
-const VIMEO_ID_PATTERN = /vimeo\.com\/(?:video\/)?(\d+)/
-
+// YouTube embed params: https://developers.google.com/youtube/player_parameters#Parameters
+// Vimeo embed params: https://help.vimeo.com/hc/en-us/articles/12426260232977-Player-parameters-overview
 /** @param {string} url */
-function getEmbedUrl(url) {
-  const youtubeMatch = url.match(YOUTUBE_ID_PATTERN)
-  if (youtubeMatch)
-    return `https://www.youtube.com/embed/${youtubeMatch[1] || youtubeMatch[2]}`
+function fixVideoEmbedUrl(url) {
+  const { id, service } = getVideoId(url)
+  if (!id) return null
 
-  const vimeoMatch = url.match(VIMEO_ID_PATTERN)
-  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`
-
-  return null
+  switch (service) {
+    case `youtube`:
+      return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1`
+    case `vimeo`:
+      return `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&dnt=1&api=1`
+    default:
+      return null
+  }
 }
 
 /** @param {import('sanity').PreviewProps} props */
 function VideoEmbedPreview(props) {
   // eslint-disable-next-line react/prop-types -- no PropTypes usage in this codebase; type is documented via JSDoc above
   const { title: url } = props
-  const embedUrl = typeof url === `string` ? getEmbedUrl(url) : null
+  const embedUrl = typeof url === `string` ? fixVideoEmbedUrl(url) : null
 
   return createElement(
     Flex,
@@ -56,11 +55,12 @@ export const defineVideoEmbedMember = () =>
         title: `Video URL`,
         type: `url`,
         validation: (Rule) =>
-          Rule.required().custom((url) =>
-            !url || VIDEO_URL_PATTERN.test(url)
-              ? true
-              : `Only YouTube or Vimeo URLs are allowed`
-          ),
+          Rule.required().custom((url) => {
+            if (!url) return true
+            const { id, service } = getVideoId(url)
+            return (id && (service === `youtube` || service === `vimeo`)) ||
+              `Only YouTube or Vimeo URLs are allowed`
+          }),
       }),
     ],
     preview: {
