@@ -11,11 +11,15 @@ function fixVideoEmbedUrl(url) {
   const { id, service } = getVideoId(url)
   if (!id) return null
 
+  // No `enablejsapi`/`api` here: this is only a static Studio preview, no
+  // programmatic play/pause/mute control needed, and `enablejsapi` requires
+  // a real parent-window postMessage handshake to initialize — which is
+  // finicky to guarantee inside the Studio's own iframe rendering.
   switch (service) {
     case `youtube`:
-      return `https://www.youtube-nocookie.com/embed/${id}?autoplay=0&mute=1&enablejsapi=1`
+      return `https://www.youtube-nocookie.com/embed/${id}`
     case `vimeo`:
-      return `https://player.vimeo.com/video/${id}?autoplay=0&muted=1&dnt=1&api=1`
+      return `https://player.vimeo.com/video/${id}?dnt=1`
     default:
       return null
   }
