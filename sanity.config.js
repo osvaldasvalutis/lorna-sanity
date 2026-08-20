@@ -15,6 +15,7 @@ import { internationalizedArray } from "sanity-plugin-internationalized-array"
 import groq from "groq"
 
 import { schemaTypes } from "./schemaTypes"
+import { defineVideoEmbedMember } from "./schemaTypes/fields/videoEmbedField"
 
 /**
  * Plain `S.list()` panes don't render `.initialValueTemplates()` (that's a
@@ -351,6 +352,7 @@ export default defineConfig({
                 },
               ],
             }),
+            defineVideoEmbedMember(),
             // https://www.sanity.io/answers/how-to-add-an-react-hr-component-to-blockcontent-schema
             // https://www.sanity.io/recipes/breaks-for-portable-text-189dba35
             // defineArrayMember({
