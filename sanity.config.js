@@ -337,12 +337,17 @@ export default defineConfig({
                   type: `string`,
                   options: {
                     list: [
-                      { title: `Thumbnail`, value: `thumbnail` },
                       { title: `Full width`, value: `full-width` },
+                      { title: `Half width`, value: `half-width` },
                     ],
                     layout: `radio`,
                   },
                   initialValue: `full-width`,
+                },
+                {
+                  name: `linkToSelf`,
+                  type: `boolean`,
+                  initialValue: false,
                 },
               ],
             }),
