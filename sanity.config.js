@@ -16,6 +16,7 @@ import groq from "groq"
 
 import { schemaTypes } from "./schemaTypes"
 import { defineVideoEmbedMember } from "./schemaTypes/fields/videoEmbedField"
+import { slugify } from "./schemaTypes/lib/slugify"
 
 /**
  * Plain `S.list()` panes don't render `.initialValueTemplates()` (that's a
@@ -239,6 +240,7 @@ export default defineConfig({
           type: `slug`,
           options: {
             maxLength: 96,
+            slugify: (input) => slugify(input, undefined, 96),
             source: (doc, context) => {
               const { language } = /** @type {{ language?: string }} */ (
                 context.parent

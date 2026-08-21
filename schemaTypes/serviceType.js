@@ -141,8 +141,9 @@ export const serviceType = defineType({
             { name: `name`, type: `internationalizedArrayString` },
             {
               name: `price`,
-              type: `number`,
-              validation: (rule) => rule.precision(2).positive(),
+              type: `string`, // we need to be able to add intervals, e.g. `130-170`, thus free text it is
+              // type: `number`,
+              // validation: (rule) => rule.precision(2).positive(),
             },
           ],
           preview: {

@@ -10,4 +10,6 @@ npm run dev
 
 ## LATERDO
 
-- fix video embed preview for youtube (Error 153 Video player configuration error)
+- content previews
+- fix video embed preview for youtube (Error 153 Video player configuration error) - probably display preview thumbnails instead of iframes
+- backups
